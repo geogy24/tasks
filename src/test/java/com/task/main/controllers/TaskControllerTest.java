@@ -9,6 +9,7 @@ import com.task.main.exceptions.TaskNotFoundException;
 import com.task.main.factories.TaskFactory;
 import com.task.main.models.Task;
 import com.task.main.services.CreateTaskServiceInterface;
+import com.task.main.services.ShowTaskIdsServiceInterface;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,6 +31,7 @@ import java.util.HashMap;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -51,6 +53,9 @@ public class TaskControllerTest {
 
     @MockBean
     private CreateTaskServiceInterface createTaskServiceInterface;
+
+    @MockBean
+    private ShowTaskIdsServiceInterface showTaskIdsServiceInterface;
 
     private Task taskModel;
 
@@ -168,6 +173,18 @@ public class TaskControllerTest {
                         .characterEncoding(UTF_8_KEY)
                         .content(this.objectMapper.writeValueAsString(map)))
                 .andExpect(status().isInternalServerError())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
+
+    @Test
+    public void whenGetAllTaskIdsThenReturnsTasksIds() throws Exception {
+        when(this.showTaskIdsServiceInterface.execute()).thenReturn(new Long[]{1L, 2L});
+
+        this.mockMvc
+                .perform(get(TASK_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(UTF_8_KEY))
+                .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 }
