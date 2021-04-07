@@ -1,12 +1,14 @@
 package com.task.main.models;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.*;
 
 import javax.persistence.*;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -24,6 +26,7 @@ import java.util.Set;
 @JsonIdentityInfo(
         generator = ObjectIdGenerators.PropertyGenerator.class,
         property = "id")
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Task {
     @Id
     @GeneratedValue
@@ -46,6 +49,9 @@ public class Task {
 
     @ManyToOne
     private Stack stack;
+
+    @OneToMany(mappedBy = "parentTask")
+    private List<Task> childTasks;
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinTable(name = "tasks_by_roles",
