@@ -18,6 +18,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 
@@ -45,7 +46,7 @@ public class ShowTaskServiceTest {
     public void whenExecuteServiceThenReturnTask() {
         Long id = Long.valueOf(faker.number().digits(2));
         Task task = this.taskFactory.model();
-        given(this.taskRepository.findById(anyLong())).willReturn(Optional.of(task));
+        given(this.taskRepository.findByIdAndActive(anyLong(), anyBoolean())).willReturn(Optional.of(task));
 
         Task returnTask = this.showTaskService.execute(id);
 

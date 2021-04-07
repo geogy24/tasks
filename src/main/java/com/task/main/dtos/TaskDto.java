@@ -49,6 +49,7 @@ public class TaskDto {
                 .name(this.name)
                 .description(Objects.nonNull(this.description) ? this.description : "")
                 .estimatedRequiredHours(this.estimatedRequiredHours)
+                .active(true)
                 .build();
     }
 }

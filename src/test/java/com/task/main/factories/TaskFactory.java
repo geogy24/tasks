@@ -44,6 +44,7 @@ public class TaskFactory {
                 .name(faker.lorem().word())
                 .description(faker.lorem().sentence())
                 .estimatedRequiredHours(Integer.valueOf(faker.number().digits(2)))
+                .active(true)
                 .build();
     }
 

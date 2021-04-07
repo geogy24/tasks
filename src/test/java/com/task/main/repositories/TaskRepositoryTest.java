@@ -61,4 +61,19 @@ public class TaskRepositoryTest {
 
         assertThat(taskIds.get()).contains(new Long[]{this.task.getId()});
     }
+
+    @Test
+    public void whenFindTaskByIdAndActiveTrueThenReturnTask() {
+        Optional<Task> task = this.taskRepository.findByIdAndActive(this.task.getId(),true);
+
+        assertThat(task.get().getId()).isEqualTo(this.task.getId());
+    }
+
+    @Test
+    public void whenFindTaskByIdAndActiveTrueButTaskNotFoundThenReturnTask() {
+        Long id = Long.parseLong(this.faker.number().digits(3));
+        Optional<Task> task = this.taskRepository.findByIdAndActive(id,true);
+
+        assertThat(task.isEmpty()).isTrue();
+    }
 }

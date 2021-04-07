@@ -39,7 +39,7 @@ public class CreateTaskService implements CreateTaskServiceInterface {
     public Task execute(TaskDto taskDto) {
         log.info("Create a task from service with data {}", taskDto);
         Task task = this.buildTask(taskDto);
-        log.info("Save task model with data {}", task);
+        log.info("Save task model");
         return this.taskRepository.save(task);
     }
 
@@ -55,7 +55,7 @@ public class CreateTaskService implements CreateTaskServiceInterface {
             task.setParentTask(parentSearch);
         }
 
-        log.info("Task model built {}", task);
+        log.info("Task model built");
         return task;
     }
 
@@ -76,13 +76,13 @@ public class CreateTaskService implements CreateTaskServiceInterface {
     @SneakyThrows
     private Task findTask(Long taskId) {
         log.info("Find task with Id {}", taskId);
-        return this.taskRepository.findById(taskId)
+        return this.taskRepository.findByIdAndActive(taskId, true)
                 .orElseThrow(TaskNotFoundException::new);
     }
 
     @SneakyThrows
     private void checkParent(Task task) {
-        log.info("Check if task is parent {}", task);
+        log.info("Check if task is parent");
         if (Objects.nonNull(task.getParentTask())) {
             throw new ChildTaskMustNotBeParentTaskException();
         }

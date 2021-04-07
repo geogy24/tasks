@@ -20,7 +20,7 @@ public class ShowTaskService implements ShowTaskServiceInterface {
     @SneakyThrows
     public Task execute(Long id) {
         log.info("Show task by id {}", id);
-        return this.taskRepository.findById(id)
+        return this.taskRepository.findByIdAndActive(id, true)
                 .orElseThrow(TaskNotFoundException::new);
     }
 }
