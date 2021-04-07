@@ -10,6 +10,7 @@ import com.task.main.factories.TaskFactory;
 import com.task.main.models.Task;
 import com.task.main.services.CreateTaskServiceInterface;
 import com.task.main.services.ShowTaskIdsServiceInterface;
+import com.task.main.services.ShowTaskServiceInterface;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,6 +30,7 @@ import org.springframework.web.context.WebApplicationContext;
 import java.util.HashMap;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -42,6 +44,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class TaskControllerTest {
 
     private final static String TASK_URL = "/api/tasks";
+    private final static String GET_TASK_URL = "/api/tasks/{id}";
     private final static String UTF_8_KEY = "utf-8";
     private final static String STACK_ID_KEY = "stack_id";
 
@@ -57,6 +60,9 @@ public class TaskControllerTest {
     @MockBean
     private ShowTaskIdsServiceInterface showTaskIdsServiceInterface;
 
+    @MockBean
+    private ShowTaskServiceInterface showTaskServiceInterface;
+
     private Task taskModel;
 
     private HashMap<String, Object> taskMap;
@@ -65,12 +71,14 @@ public class TaskControllerTest {
 
     private Faker faker;
 
+    private TaskFactory taskFactory;
+
     @Before
     public void setup() {
         this.mockMvc = MockMvcBuilders.webAppContextSetup(this.webApplicationContext).build();
         this.faker = new Faker();
 
-        TaskFactory taskFactory = new TaskFactory();
+        this.taskFactory = new TaskFactory();
         this.taskMap = taskFactory.map();
         this.taskModel = taskFactory.model(this.taskMap);
     }
@@ -185,6 +193,34 @@ public class TaskControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .characterEncoding(UTF_8_KEY))
                 .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
+
+    @Test
+    public void whenGetATaskThenReturnsTheTask() throws Exception {
+        Long id = Long.valueOf(faker.number().digits(2));
+        when(this.showTaskServiceInterface.execute(anyLong())).thenReturn(this.taskFactory.model());
+
+        this.mockMvc
+                .perform(get(GET_TASK_URL, id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(UTF_8_KEY))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
+
+    @Test(expected = MockitoException.class)
+    public void whenGetATaskButTaskNotFoundThenRaiseTaskNotFoundException()
+            throws Exception {
+        Long id = Long.valueOf(faker.number().digits(2));
+        when(this.createTaskServiceInterface.execute(any())).thenThrow(TaskNotFoundException.class);
+
+        this.mockMvc
+                .perform(get(GET_TASK_URL, id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(UTF_8_KEY)
+                        .content(this.objectMapper.writeValueAsString(this.taskMap)))
+                .andExpect(status().isNotFound())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 }
