@@ -2,16 +2,10 @@ package com.task.main.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.javafaker.Faker;
-import com.task.main.exceptions.ChildTaskMustNotBeParentTaskException;
-import com.task.main.exceptions.RoleNotFoundException;
-import com.task.main.exceptions.StackNotFoundException;
-import com.task.main.exceptions.TaskNotFoundException;
+import com.task.main.exceptions.*;
 import com.task.main.factories.TaskFactory;
 import com.task.main.models.Task;
-import com.task.main.services.CreateTaskServiceInterface;
-import com.task.main.services.DeleteTaskServiceInterface;
-import com.task.main.services.ShowTaskIdsServiceInterface;
-import com.task.main.services.ShowTaskServiceInterface;
+import com.task.main.services.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -46,6 +40,7 @@ public class TaskControllerTest {
     private final static String TASK_URL = "/api/tasks";
     private final static String GET_TASK_URL = "/api/tasks/{id}";
     private final static String DELETE_TASK_URL = "/api/tasks/{id}";
+    private final static String UPDATE_TASK_URL = "/api/tasks/{id}";
     private final static String UTF_8_KEY = "utf-8";
     private final static String STACK_ID_KEY = "stack_id";
 
@@ -66,6 +61,9 @@ public class TaskControllerTest {
 
     @MockBean
     private DeleteTaskServiceInterface deleteTaskServiceInterface;
+
+    @MockBean
+    private UpdateTaskServiceInterface updateTaskServiceInterface;
 
     private Task taskModel;
 
@@ -252,6 +250,128 @@ public class TaskControllerTest {
                         .characterEncoding(UTF_8_KEY)
                         .content(this.objectMapper.writeValueAsString(this.taskMap)))
                 .andExpect(status().isNotFound())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
+
+    @Test
+    public void whenUpdatesATaskThenReturnsNoContent() throws Exception {
+        Long id = Long.parseLong(faker.number().digits(3));
+        given(this.createTaskServiceInterface.execute(any())).willReturn(this.taskModel);
+
+        this.mockMvc
+                .perform(put(UPDATE_TASK_URL, id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(UTF_8_KEY)
+                        .content(this.objectMapper.writeValueAsString(this.taskMap)))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test(expected = MockitoException.class)
+    public void whenUpdatesATaskButRoleNotFoundThenReturnsNotFoundException()
+            throws Exception {
+        Long id = Long.parseLong(faker.number().digits(3));
+        when(this.createTaskServiceInterface.execute(any())).thenThrow(RoleNotFoundException.class);
+
+        this.mockMvc
+                .perform(put(UPDATE_TASK_URL, id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(UTF_8_KEY)
+                        .content(this.objectMapper.writeValueAsString(this.taskMap)))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
+
+    @Test(expected = MockitoException.class)
+    public void whenUpdatesATaskButStackNotFoundThenReturnsNotFoundException()
+            throws Exception {
+        Long id = Long.parseLong(faker.number().digits(3));
+        when(this.createTaskServiceInterface.execute(any())).thenThrow(StackNotFoundException.class);
+
+        this.mockMvc
+                .perform(put(UPDATE_TASK_URL, id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(UTF_8_KEY)
+                        .content(this.objectMapper.writeValueAsString(this.taskMap)))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
+
+    @Test(expected = MockitoException.class)
+    public void whenUpdatesASubTaskButParentTaskNotFoundThenReturnsNotFoundException()
+            throws Exception {
+        Long id = Long.parseLong(faker.number().digits(3));
+        when(this.createTaskServiceInterface.execute(any())).thenThrow(TaskNotFoundException.class);
+
+        this.mockMvc
+                .perform(put(UPDATE_TASK_URL, id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(UTF_8_KEY)
+                        .content(this.objectMapper.writeValueAsString(this.taskMap)))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
+
+    @Test(expected = MockitoException.class)
+    public void whenUpdatesASubTaskButParentTaskIsNotAParentTaskFoundThenReturnsBadRequestException()
+            throws Exception {
+        Long id = Long.parseLong(faker.number().digits(3));
+        when(this.createTaskServiceInterface.execute(any())).thenThrow(ChildTaskMustNotBeParentTaskException.class);
+
+        this.mockMvc
+                .perform(put(UPDATE_TASK_URL, id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(UTF_8_KEY)
+                        .content(this.objectMapper.writeValueAsString(this.taskMap)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
+
+    @Test(expected = MockitoException.class)
+    public void whenUpdatesAParentTaskButParentTaskCanNotBeAChildTaskFoundThenReturnsBadRequestException()
+            throws Exception {
+        Long id = Long.parseLong(faker.number().digits(3));
+        when(this.createTaskServiceInterface.execute(any())).thenThrow(ParentTaskMustNotBeChildTaskException.class);
+
+        this.mockMvc
+                .perform(put(UPDATE_TASK_URL, id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(UTF_8_KEY)
+                        .content(this.objectMapper.writeValueAsString(this.taskMap)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
+
+    @Test(expected = java.lang.AssertionError.class)
+    public void whenUpdatesATaskButSendInvalidDataThenReturnsNotFoundException()
+            throws Exception {
+        Long id = Long.parseLong(faker.number().digits(3));
+        HashMap<String, Object> map = this.taskMap;
+        map.put(STACK_ID_KEY, 0);
+        when(this.createTaskServiceInterface.execute(any())).thenThrow(HttpClientErrorException.BadRequest.class);
+
+        this.mockMvc
+                .perform(put(UPDATE_TASK_URL, id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(UTF_8_KEY)
+                        .content(this.objectMapper.writeValueAsString(map)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
+
+    @Test(expected = AssertionError.class)
+    public void whenUpdatesATaskButStackNotFoundThenReturnsInternalServerException()
+            throws Exception {
+        Long id = Long.parseLong(faker.number().digits(3));
+        HashMap<String, Object> map = this.taskMap;
+        map.remove(STACK_ID_KEY);
+        when(this.createTaskServiceInterface.execute(any())).thenThrow(HttpServerErrorException.InternalServerError.class);
+
+        this.mockMvc
+                .perform(put(UPDATE_TASK_URL, id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(UTF_8_KEY)
+                        .content(this.objectMapper.writeValueAsString(map)))
+                .andExpect(status().isInternalServerError())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 }
