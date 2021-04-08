@@ -53,7 +53,7 @@ public class CreateTaskServiceTest {
     public void whenExecuteServiceThenReturnTaskCreated() {
         given(this.roleRepository.findById(anyLong())).willReturn(Optional.of(new RoleFactory().model()));
         given(this.stackRepository.findById(anyLong())).willReturn(Optional.of(new StackFactory().model()));
-        given(this.taskRepository.findByIdAndActive(anyLong(), anyBoolean())).willReturn(Optional.of(taskFactory.model()));
+        given(this.taskRepository.findById(anyLong())).willReturn(Optional.of(taskFactory.model()));
         given(this.taskRepository.save(any())).willReturn(this.taskFactory.model());
 
         assertThat(this.createTaskService.execute(this.taskFactory.dto())).isNotNull();
@@ -89,7 +89,7 @@ public class CreateTaskServiceTest {
         task.setParentTask(new Task());
         given(this.roleRepository.findById(anyLong())).willReturn(Optional.of(new RoleFactory().model()));
         given(this.stackRepository.findById(anyLong())).willReturn(Optional.of(new StackFactory().model()));
-        given(this.taskRepository.findByIdAndActive(anyLong(), anyBoolean())).willReturn(Optional.of(task));
+        given(this.taskRepository.findById(anyLong())).willReturn(Optional.of(task));
         given(this.taskRepository.save(any())).willReturn(this.taskFactory.model());
 
         assertThrows(ChildTaskMustNotBeParentTaskException.class, () -> this.createTaskService.execute(this.taskFactory.dto()));
