@@ -1,6 +1,7 @@
 package com.task.main.services;
 
 import com.github.javafaker.Faker;
+import com.task.main.dtos.UpdateTaskDto;
 import com.task.main.exceptions.*;
 import com.task.main.factories.RoleFactory;
 import com.task.main.factories.StackFactory;
@@ -54,7 +55,7 @@ public class UpdateTaskServiceTest {
     }
 
     @Test
-    public void whenExecuteServiceThenReturnTaskCreated() {
+    public void whenExecuteServiceThenReturnNotContent() {
         Long id = Long.parseLong(faker.number().digits(3));
         given(this.roleRepository.findAllById(any())).willReturn(List.of(new RoleFactory().model()));
         given(this.stackRepository.findById(anyLong())).willReturn(Optional.of(new StackFactory().model()));
@@ -62,6 +63,19 @@ public class UpdateTaskServiceTest {
         given(this.taskRepository.save(any())).willReturn(this.taskFactory.model());
 
         assertThat(this.updateTaskService.execute(id, this.taskFactory.updateDto())).isNotNull();
+    }
+
+    @Test
+    public void whenExecuteServiceWithMultipleRolesThenReturnNotContent() {
+        Long id = Long.parseLong(faker.number().digits(3));
+        UpdateTaskDto updateTaskDto = this.taskFactory.updateDto();
+        updateTaskDto.setRoleIds(new Long[]{Long.parseLong(faker.number().digits(3)), Long.parseLong(faker.number().digits(3))});
+        given(this.roleRepository.findAllById(any())).willReturn(List.of(new RoleFactory().model(), new RoleFactory().model()));
+        given(this.stackRepository.findById(anyLong())).willReturn(Optional.of(new StackFactory().model()));
+        given(this.taskRepository.findById(anyLong())).willReturn(Optional.of(this.taskFactory.model()));
+        given(this.taskRepository.save(any())).willReturn(this.taskFactory.model());
+
+        assertThat(this.updateTaskService.execute(id, updateTaskDto)).isNotNull();
     }
 
     @Test
