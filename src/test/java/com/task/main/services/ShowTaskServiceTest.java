@@ -1,11 +1,11 @@
 package com.task.main.services;
 
 import com.github.javafaker.Faker;
-import com.task.main.exceptions.ChildTaskMustNotBeParentTaskException;
 import com.task.main.exceptions.TaskNotFoundException;
 import com.task.main.factories.TaskFactory;
 import com.task.main.models.Task;
 import com.task.main.repositories.TaskRepository;
+import com.task.main.services.implementations.ShowTaskService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,7 +18,6 @@ import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 

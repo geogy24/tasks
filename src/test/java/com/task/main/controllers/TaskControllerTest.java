@@ -5,7 +5,7 @@ import com.github.javafaker.Faker;
 import com.task.main.exceptions.*;
 import com.task.main.factories.TaskFactory;
 import com.task.main.models.Task;
-import com.task.main.services.*;
+import com.task.main.services.interfaces.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -51,19 +51,19 @@ public class TaskControllerTest {
     private MockMvc mockMvc;
 
     @MockBean
-    private CreateTaskServiceInterface createTaskServiceInterface;
+    private CreateTaskService createTaskService;
 
     @MockBean
-    private ShowTaskIdsServiceInterface showTaskIdsServiceInterface;
+    private ShowTaskIdsService showTaskIdsService;
 
     @MockBean
-    private ShowTaskServiceInterface showTaskServiceInterface;
+    private ShowTaskService showTaskService;
 
     @MockBean
-    private DeleteTaskServiceInterface deleteTaskServiceInterface;
+    private DeleteTaskService deleteTaskService;
 
     @MockBean
-    private UpdateTaskServiceInterface updateTaskServiceInterface;
+    private UpdateTaskService updateTaskService;
 
     private Task taskModel;
 
@@ -87,7 +87,7 @@ public class TaskControllerTest {
 
     @Test
     public void whenCreatesATaskThenReturnsTaskCreated() throws Exception {
-        given(this.createTaskServiceInterface.execute(any())).willReturn(this.taskModel);
+        given(this.createTaskService.execute(any())).willReturn(this.taskModel);
 
         this.mockMvc
             .perform(post(TASK_URL)
@@ -101,7 +101,7 @@ public class TaskControllerTest {
     @Test(expected = MockitoException.class)
     public void whenCreatesATaskButRoleNotFoundThenReturnsNotFoundException()
         throws Exception {
-        when(this.createTaskServiceInterface.execute(any())).thenThrow(RoleNotFoundException.class);
+        when(this.createTaskService.execute(any())).thenThrow(RoleNotFoundException.class);
 
         this.mockMvc
             .perform(post(TASK_URL)
@@ -115,7 +115,7 @@ public class TaskControllerTest {
     @Test(expected = MockitoException.class)
     public void whenCreatesATaskButStackNotFoundThenReturnsNotFoundException()
             throws Exception {
-        when(this.createTaskServiceInterface.execute(any())).thenThrow(StackNotFoundException.class);
+        when(this.createTaskService.execute(any())).thenThrow(StackNotFoundException.class);
 
         this.mockMvc
                 .perform(post(TASK_URL)
@@ -129,7 +129,7 @@ public class TaskControllerTest {
     @Test(expected = MockitoException.class)
     public void whenCreatesASubTaskButParentTaskNotFoundThenReturnsNotFoundException()
             throws Exception {
-        when(this.createTaskServiceInterface.execute(any())).thenThrow(TaskNotFoundException.class);
+        when(this.createTaskService.execute(any())).thenThrow(TaskNotFoundException.class);
 
         this.mockMvc
                 .perform(post(TASK_URL)
@@ -143,7 +143,7 @@ public class TaskControllerTest {
     @Test(expected = MockitoException.class)
     public void whenCreatesASubTaskButParentTaskIsNotAParentTaskFoundThenReturnsBadRequestException()
             throws Exception {
-        when(this.createTaskServiceInterface.execute(any())).thenThrow(ChildTaskMustNotBeParentTaskException.class);
+        when(this.createTaskService.execute(any())).thenThrow(ChildTaskMustNotBeParentTaskException.class);
 
         this.mockMvc
                 .perform(post(TASK_URL)
@@ -159,7 +159,7 @@ public class TaskControllerTest {
             throws Exception {
         HashMap<String, Object> map = this.taskMap;
         map.put(STACK_ID_KEY, 0);
-        when(this.createTaskServiceInterface.execute(any())).thenThrow(HttpClientErrorException.BadRequest.class);
+        when(this.createTaskService.execute(any())).thenThrow(HttpClientErrorException.BadRequest.class);
 
         this.mockMvc
                 .perform(post(TASK_URL)
@@ -175,7 +175,7 @@ public class TaskControllerTest {
             throws Exception {
         HashMap<String, Object> map = this.taskMap;
         map.remove(STACK_ID_KEY);
-        when(this.createTaskServiceInterface.execute(any())).thenThrow(HttpServerErrorException.InternalServerError.class);
+        when(this.createTaskService.execute(any())).thenThrow(HttpServerErrorException.InternalServerError.class);
 
         this.mockMvc
                 .perform(post(TASK_URL)
@@ -188,7 +188,7 @@ public class TaskControllerTest {
 
     @Test
     public void whenGetAllTaskIdsThenReturnsTasksIds() throws Exception {
-        when(this.showTaskIdsServiceInterface.execute()).thenReturn(new Long[]{1L, 2L});
+        when(this.showTaskIdsService.execute()).thenReturn(new Long[]{1L, 2L});
 
         this.mockMvc
                 .perform(get(TASK_URL)
@@ -201,7 +201,7 @@ public class TaskControllerTest {
     @Test
     public void whenGetATaskThenReturnsTheTask() throws Exception {
         Long id = Long.valueOf(faker.number().digits(2));
-        when(this.showTaskServiceInterface.execute(anyLong())).thenReturn(this.taskFactory.model());
+        when(this.showTaskService.execute(anyLong())).thenReturn(this.taskFactory.model());
 
         this.mockMvc
                 .perform(get(GET_TASK_URL, id)
@@ -215,7 +215,7 @@ public class TaskControllerTest {
     public void whenGetATaskButTaskNotFoundThenRaiseTaskNotFoundException()
             throws Exception {
         Long id = Long.valueOf(faker.number().digits(2));
-        when(this.createTaskServiceInterface.execute(any())).thenThrow(TaskNotFoundException.class);
+        when(this.createTaskService.execute(any())).thenThrow(TaskNotFoundException.class);
 
         this.mockMvc
                 .perform(get(GET_TASK_URL, id)
@@ -229,7 +229,7 @@ public class TaskControllerTest {
     @Test
     public void whenDeleteATaskThenTaskIsDeleted() throws Exception {
         Long id = Long.valueOf(faker.number().digits(2));
-        doNothing().when(this.deleteTaskServiceInterface).execute(anyLong());
+        doNothing().when(this.deleteTaskService).execute(anyLong());
 
         this.mockMvc
                 .perform(delete(DELETE_TASK_URL, id)
@@ -242,7 +242,7 @@ public class TaskControllerTest {
     public void whenDeleteATaskButTaskNotFoundThenRaiseTaskNotFoundException()
             throws Exception {
         Long id = Long.valueOf(faker.number().digits(2));
-        doThrow(TaskNotFoundException.class).when(this.deleteTaskServiceInterface).execute(anyLong());
+        doThrow(TaskNotFoundException.class).when(this.deleteTaskService).execute(anyLong());
 
         this.mockMvc
                 .perform(delete(DELETE_TASK_URL, id)
@@ -256,7 +256,7 @@ public class TaskControllerTest {
     @Test
     public void whenUpdatesATaskThenReturnsNoContent() throws Exception {
         Long id = Long.parseLong(faker.number().digits(3));
-        given(this.createTaskServiceInterface.execute(any())).willReturn(this.taskModel);
+        given(this.createTaskService.execute(any())).willReturn(this.taskModel);
 
         this.mockMvc
                 .perform(put(UPDATE_TASK_URL, id)
@@ -270,7 +270,7 @@ public class TaskControllerTest {
     public void whenUpdatesATaskButRoleNotFoundThenReturnsNotFoundException()
             throws Exception {
         Long id = Long.parseLong(faker.number().digits(3));
-        when(this.createTaskServiceInterface.execute(any())).thenThrow(RoleNotFoundException.class);
+        when(this.createTaskService.execute(any())).thenThrow(RoleNotFoundException.class);
 
         this.mockMvc
                 .perform(put(UPDATE_TASK_URL, id)
@@ -285,7 +285,7 @@ public class TaskControllerTest {
     public void whenUpdatesATaskButStackNotFoundThenReturnsNotFoundException()
             throws Exception {
         Long id = Long.parseLong(faker.number().digits(3));
-        when(this.createTaskServiceInterface.execute(any())).thenThrow(StackNotFoundException.class);
+        when(this.createTaskService.execute(any())).thenThrow(StackNotFoundException.class);
 
         this.mockMvc
                 .perform(put(UPDATE_TASK_URL, id)
@@ -300,7 +300,7 @@ public class TaskControllerTest {
     public void whenUpdatesASubTaskButParentTaskNotFoundThenReturnsNotFoundException()
             throws Exception {
         Long id = Long.parseLong(faker.number().digits(3));
-        when(this.createTaskServiceInterface.execute(any())).thenThrow(TaskNotFoundException.class);
+        when(this.createTaskService.execute(any())).thenThrow(TaskNotFoundException.class);
 
         this.mockMvc
                 .perform(put(UPDATE_TASK_URL, id)
@@ -315,7 +315,7 @@ public class TaskControllerTest {
     public void whenUpdatesASubTaskButParentTaskIsNotAParentTaskFoundThenReturnsBadRequestException()
             throws Exception {
         Long id = Long.parseLong(faker.number().digits(3));
-        when(this.createTaskServiceInterface.execute(any())).thenThrow(ChildTaskMustNotBeParentTaskException.class);
+        when(this.createTaskService.execute(any())).thenThrow(ChildTaskMustNotBeParentTaskException.class);
 
         this.mockMvc
                 .perform(put(UPDATE_TASK_URL, id)
@@ -330,7 +330,7 @@ public class TaskControllerTest {
     public void whenUpdatesAParentTaskButParentTaskCanNotBeAChildTaskFoundThenReturnsBadRequestException()
             throws Exception {
         Long id = Long.parseLong(faker.number().digits(3));
-        when(this.createTaskServiceInterface.execute(any())).thenThrow(ParentTaskMustNotBeChildTaskException.class);
+        when(this.createTaskService.execute(any())).thenThrow(ParentTaskMustNotBeChildTaskException.class);
 
         this.mockMvc
                 .perform(put(UPDATE_TASK_URL, id)
@@ -347,7 +347,7 @@ public class TaskControllerTest {
         Long id = Long.parseLong(faker.number().digits(3));
         HashMap<String, Object> map = this.taskMap;
         map.put(STACK_ID_KEY, 0);
-        when(this.createTaskServiceInterface.execute(any())).thenThrow(HttpClientErrorException.BadRequest.class);
+        when(this.createTaskService.execute(any())).thenThrow(HttpClientErrorException.BadRequest.class);
 
         this.mockMvc
                 .perform(put(UPDATE_TASK_URL, id)
@@ -364,7 +364,7 @@ public class TaskControllerTest {
         Long id = Long.parseLong(faker.number().digits(3));
         HashMap<String, Object> map = this.taskMap;
         map.remove(STACK_ID_KEY);
-        when(this.createTaskServiceInterface.execute(any())).thenThrow(HttpServerErrorException.InternalServerError.class);
+        when(this.createTaskService.execute(any())).thenThrow(HttpServerErrorException.InternalServerError.class);
 
         this.mockMvc
                 .perform(put(UPDATE_TASK_URL, id)

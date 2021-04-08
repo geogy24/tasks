@@ -1,11 +1,11 @@
 package com.task.main.services;
 
 import com.github.javafaker.Faker;
-import com.task.main.exceptions.RoleNotFoundException;
 import com.task.main.exceptions.TaskNotFoundException;
 import com.task.main.factories.TaskFactory;
 import com.task.main.models.Task;
 import com.task.main.repositories.TaskRepository;
+import com.task.main.services.implementations.DeleteTaskService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

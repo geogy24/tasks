@@ -1,4 +1,4 @@
-package com.task.main.services;
+package com.task.main.services.implementations;
 
 import com.task.main.dtos.TaskDto;
 import com.task.main.exceptions.ChildTaskMustNotBeParentTaskException;
@@ -19,7 +19,7 @@ import java.util.*;
 
 @Service
 @Slf4j
-public class CreateTaskService implements CreateTaskServiceInterface {
+public class CreateTaskService implements com.task.main.services.interfaces.CreateTaskService {
     private final RoleRepository roleRepository;
     private final StackRepository stackRepository;
     private final TaskRepository taskRepository;

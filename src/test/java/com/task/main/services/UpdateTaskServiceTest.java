@@ -10,6 +10,7 @@ import com.task.main.models.Task;
 import com.task.main.repositories.RoleRepository;
 import com.task.main.repositories.StackRepository;
 import com.task.main.repositories.TaskRepository;
+import com.task.main.services.implementations.UpdateTaskService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

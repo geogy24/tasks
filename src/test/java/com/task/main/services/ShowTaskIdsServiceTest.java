@@ -2,6 +2,7 @@ package com.task.main.services;
 
 import com.task.main.factories.TaskFactory;
 import com.task.main.repositories.TaskRepository;
+import com.task.main.services.implementations.ShowTaskIdsService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

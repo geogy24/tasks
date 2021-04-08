@@ -1,4 +1,4 @@
-package com.task.main.services;
+package com.task.main.services.implementations;
 
 import com.task.main.exceptions.TaskNotFoundException;
 import com.task.main.models.Task;
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
-public class DeleteTaskService implements DeleteTaskServiceInterface {
+public class DeleteTaskService implements com.task.main.services.interfaces.DeleteTaskService {
     private final TaskRepository taskRepository;
 
     @Autowired

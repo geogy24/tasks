@@ -1,4 +1,4 @@
-package com.task.main.services;
+package com.task.main.services.implementations;
 
 import com.task.main.dtos.UpdateTaskDto;
 import com.task.main.exceptions.*;
@@ -18,7 +18,7 @@ import java.util.Objects;
 
 @Service
 @Slf4j
-public class UpdateTaskService implements UpdateTaskServiceInterface {
+public class UpdateTaskService implements com.task.main.services.interfaces.UpdateTaskService {
     private final TaskRepository taskRepository;
     private final RoleRepository roleRepository;
     private final StackRepository stackRepository;
