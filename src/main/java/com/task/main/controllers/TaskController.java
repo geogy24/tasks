@@ -89,12 +89,13 @@ public class TaskController {
     }
 
     @PutMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @ApiOperation(value = "Update a task or sub-task")
     @ApiResponses(value = {
             @ApiResponse(code = 204, message = "Return task search by id"),
             @ApiResponse(code = 404, message = "Task not found")
     })
-    public void delete(@PathVariable Long id, @RequestBody UpdateTaskDto updateTaskDto) {
+    public void update(@PathVariable Long id, @RequestBody UpdateTaskDto updateTaskDto) {
         log.info("Delete task by id {} and body {}", id, updateTaskDto);
         this.updateTaskServiceInterface.execute(id, updateTaskDto);
     }
