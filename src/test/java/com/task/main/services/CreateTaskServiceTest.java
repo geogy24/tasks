@@ -7,6 +7,7 @@ import com.task.main.exceptions.TaskNotFoundException;
 import com.task.main.factories.RoleFactory;
 import com.task.main.factories.StackFactory;
 import com.task.main.factories.TaskFactory;
+import com.task.main.models.Role;
 import com.task.main.models.Task;
 import com.task.main.repositories.RoleRepository;
 import com.task.main.repositories.StackRepository;
@@ -19,7 +20,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.util.Optional;
+import java.util.*;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -51,9 +52,9 @@ public class CreateTaskServiceTest {
 
     @Test
     public void whenExecuteServiceThenReturnTaskCreated() {
-        given(this.roleRepository.findById(anyLong())).willReturn(Optional.of(new RoleFactory().model()));
+        given(this.roleRepository.findAllById(any())).willReturn(List.of(new RoleFactory().model()));
         given(this.stackRepository.findById(anyLong())).willReturn(Optional.of(new StackFactory().model()));
-        given(this.taskRepository.findById(anyLong())).willReturn(Optional.of(taskFactory.model()));
+        given(this.taskRepository.findById(anyLong())).willReturn(Optional.of(this.taskFactory.model()));
         given(this.taskRepository.save(any())).willReturn(this.taskFactory.model());
 
         assertThat(this.createTaskService.execute(this.taskFactory.dto())).isNotNull();
@@ -61,14 +62,14 @@ public class CreateTaskServiceTest {
 
     @Test
     public void whenExecuteServiceButRoleNotFoundThenRaiseRoleNotFoundException() {
-        given(this.roleRepository.findById(anyLong())).willReturn(Optional.empty());
+        given(this.roleRepository.findAllById(Collections.singleton(anyLong()))).willReturn(List.of());
 
         assertThrows(RoleNotFoundException.class, () -> this.createTaskService.execute(this.taskFactory.dto()));
     }
 
     @Test
     public void whenExecuteServiceButStackNotFoundThenRaiseStackNotFoundException() {
-        given(this.roleRepository.findById(anyLong())).willReturn(Optional.of(new RoleFactory().model()));
+        given(this.roleRepository.findAllById(any())).willReturn(List.of(new RoleFactory().model()));
         given(this.stackRepository.findById(anyLong())).willReturn(Optional.empty());
 
         assertThrows(StackNotFoundException.class, () -> this.createTaskService.execute(this.taskFactory.dto()));
@@ -76,7 +77,7 @@ public class CreateTaskServiceTest {
 
     @Test
     public void whenExecuteServiceButParentTaskNotFoundThenRaiseTaskNotFoundException() {
-        given(this.roleRepository.findById(anyLong())).willReturn(Optional.of(new RoleFactory().model()));
+        given(this.roleRepository.findAllById(any())).willReturn(List.of(new RoleFactory().model()));
         given(this.stackRepository.findById(anyLong())).willReturn(Optional.of(new StackFactory().model()));
         given(this.taskRepository.findById(anyLong())).willReturn(Optional.empty());
 
@@ -87,7 +88,7 @@ public class CreateTaskServiceTest {
     public void whenExecuteServiceButParentTaskIsNotAParentTaskThenRaiseChildTaskMustNotBeParentTaskException() {
         Task task = taskFactory.model();
         task.setParentTask(new Task());
-        given(this.roleRepository.findById(anyLong())).willReturn(Optional.of(new RoleFactory().model()));
+        given(this.roleRepository.findAllById(any())).willReturn(List.of(new RoleFactory().model()));
         given(this.stackRepository.findById(anyLong())).willReturn(Optional.of(new StackFactory().model()));
         given(this.taskRepository.findById(anyLong())).willReturn(Optional.of(task));
         given(this.taskRepository.save(any())).willReturn(this.taskFactory.model());
