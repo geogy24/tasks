@@ -19,7 +19,7 @@ import java.util.Objects;
  */
 @Data
 @Builder
-public class TaskDto {
+public class UpdateTaskDto {
     @NotBlank
     @Size(min = 2, max = 80)
     private String name;

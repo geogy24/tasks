@@ -1,10 +1,9 @@
 package com.task.main.controllers;
 
 import com.task.main.dtos.TaskDto;
+import com.task.main.dtos.UpdateTaskDto;
 import com.task.main.models.Task;
-import com.task.main.services.CreateTaskServiceInterface;
-import com.task.main.services.ShowTaskIdsServiceInterface;
-import com.task.main.services.ShowTaskServiceInterface;
+import com.task.main.services.*;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
@@ -28,15 +27,22 @@ public class TaskController {
     private final CreateTaskServiceInterface createTaskServiceInterface;
     private final ShowTaskIdsServiceInterface showTaskIdsServiceInterface;
     private final ShowTaskServiceInterface showTaskServiceInterface;
+    private final DeleteTaskServiceInterface deleteTaskServiceInterface;
+    private final UpdateTaskServiceInterface updateTaskServiceInterface;
 
     @Autowired
     public TaskController(
             CreateTaskServiceInterface createTaskServiceInterface,
             ShowTaskIdsServiceInterface showTaskIdsServiceInterface,
-            ShowTaskServiceInterface showTaskServiceInterface) {
+            ShowTaskServiceInterface showTaskServiceInterface,
+            DeleteTaskServiceInterface deleteTaskServiceInterface,
+            UpdateTaskServiceInterface updateTaskServiceInterface
+    ) {
         this.createTaskServiceInterface = createTaskServiceInterface;
         this.showTaskIdsServiceInterface = showTaskIdsServiceInterface;
         this.showTaskServiceInterface = showTaskServiceInterface;
+        this.deleteTaskServiceInterface = deleteTaskServiceInterface;
+        this.updateTaskServiceInterface = updateTaskServiceInterface;
     }
 
     @PostMapping
@@ -69,5 +75,27 @@ public class TaskController {
     public Task show(@PathVariable Long id) {
         log.info("Show task by id {}", id);
         return this.showTaskServiceInterface.execute(id);
+    }
+
+    @DeleteMapping("/{id}")
+    @ApiOperation(value = "Delete a task or sub-task")
+    @ApiResponses(value = {
+            @ApiResponse(code = 204, message = "Return task search by id"),
+            @ApiResponse(code = 404, message = "Task not found")
+    })
+    public void delete(@PathVariable Long id) {
+        log.info("Delete task by id {}", id);
+        this.deleteTaskServiceInterface.execute(id);
+    }
+
+    @PutMapping("/{id}")
+    @ApiOperation(value = "Update a task or sub-task")
+    @ApiResponses(value = {
+            @ApiResponse(code = 204, message = "Return task search by id"),
+            @ApiResponse(code = 404, message = "Task not found")
+    })
+    public void delete(@PathVariable Long id, @RequestBody UpdateTaskDto updateTaskDto) {
+        log.info("Delete task by id {} and body {}", id, updateTaskDto);
+        this.updateTaskServiceInterface.execute(id, updateTaskDto);
     }
 }
