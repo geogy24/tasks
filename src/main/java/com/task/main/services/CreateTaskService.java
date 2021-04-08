@@ -15,9 +15,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Objects;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -46,7 +44,7 @@ public class CreateTaskService implements CreateTaskServiceInterface {
     private Task buildTask(TaskDto taskDto) {
         log.info("Build task model with data {}", taskDto);
         Task task = taskDto.toTask();
-        task.setRoles(new HashSet<>(Collections.singletonList(this.findRole(taskDto.getRoleId()))));
+        task.setRoles(new HashSet<>(this.findRole(taskDto.getRoleIds())));
         task.setStack(this.findStack(taskDto.getStackId()));
 
         if (Objects.nonNull(taskDto.getParentTaskId())) {
@@ -60,10 +58,15 @@ public class CreateTaskService implements CreateTaskServiceInterface {
     }
 
     @SneakyThrows
-    private Role findRole(Long roleId) {
-        log.info("Find role with Id {}", roleId);
-        return this.roleRepository.findById(roleId)
-                .orElseThrow(RoleNotFoundException::new);
+    private List<Role> findRole(Long[] roleIds) {
+        log.info("Find roles");
+        List<Role> roles = (List<Role>) this.roleRepository.findAllById(Arrays.asList(roleIds));
+
+        if (roles.size() != roleIds.length) {
+            throw new RoleNotFoundException();
+        }
+
+        return roles;
     }
 
     @SneakyThrows

@@ -39,10 +39,9 @@ public class TaskDto {
     @Min(1)
     private Long stackId;
 
-    @JsonProperty(value= "role_id")
+    @JsonProperty(value= "role_ids")
     @NotNull
-    @Min(1)
-    private Long roleId;
+    private Long[] roleIds;
 
     public Task toTask() {
         return Task.builder()
