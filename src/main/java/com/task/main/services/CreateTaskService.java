@@ -76,7 +76,7 @@ public class CreateTaskService implements CreateTaskServiceInterface {
     @SneakyThrows
     private Task findTask(Long taskId) {
         log.info("Find task with Id {}", taskId);
-        return this.taskRepository.findByIdAndActive(taskId, true)
+        return this.taskRepository.findById(taskId)
                 .orElseThrow(TaskNotFoundException::new);
     }
 

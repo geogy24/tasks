@@ -44,9 +44,6 @@ public class Task {
     @Min(1)
     private Integer estimatedRequiredHours;
 
-    @Column(columnDefinition = "boolean default true")
-    private Boolean active;
-
     @ManyToOne
     private Task parentTask;
 
