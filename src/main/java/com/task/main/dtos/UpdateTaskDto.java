@@ -34,6 +34,10 @@ public class UpdateTaskDto {
     @Min(1)
     private Integer estimatedRequiredHours;
 
+    @JsonProperty(value= "worked_hours")
+    @Min(1)
+    private Integer workedHours;
+
     @JsonProperty(value= "parent_task_id")
     private Long parentTaskId;
 
@@ -51,6 +55,7 @@ public class UpdateTaskDto {
                 .name(Objects.nonNull(this.name) ? this.name : task.getName())
                 .description(Objects.nonNull(this.description) ? this.description : task.getDescription())
                 .estimatedRequiredHours(Objects.nonNull(this.estimatedRequiredHours) ? this.estimatedRequiredHours : task.getEstimatedRequiredHours())
+                .workedHours(Objects.nonNull(this.workedHours) ? this.workedHours : task.getWorkedHours())
                 .parentTask(Objects.nonNull(this.parentTaskId) ? Task.builder().id(this.parentTaskId).build() : task.getParentTask())
                 .roles(this.getRoles(task))
                 .stack(Objects.nonNull(this.stackId) ? Stack.builder().id(this.stackId).build() : task.getStack())

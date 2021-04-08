@@ -31,6 +31,10 @@ public class TaskDto {
     @Min(1)
     private Integer estimatedRequiredHours;
 
+    @JsonProperty(value= "worked_hours")
+    @Min(1)
+    private Integer workedHours;
+
     @JsonProperty(value= "parent_task_id")
     private Long parentTaskId;
 

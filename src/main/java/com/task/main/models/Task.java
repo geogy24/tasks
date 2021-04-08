@@ -44,6 +44,9 @@ public class Task {
     @Min(1)
     private Integer estimatedRequiredHours;
 
+    @Min(1)
+    private Integer workedHours;
+
     @ManyToOne
     private Task parentTask;
 
