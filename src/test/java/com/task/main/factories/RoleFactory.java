@@ -16,4 +16,11 @@ public class RoleFactory {
                 .name(this.faker.lorem().word())
                 .build();
     }
+
+    public Role model(Long roleId) {
+        return Role.builder()
+                .id(roleId)
+                .name(this.faker.lorem().word())
+                .build();
+    }
 }

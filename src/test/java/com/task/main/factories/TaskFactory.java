@@ -5,7 +5,10 @@ import com.task.main.dtos.TaskDto;
 import com.task.main.dtos.UpdateTaskDto;
 import com.task.main.models.Task;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 
 public class TaskFactory {
     private final static String NAME_KEY = "name";
@@ -14,6 +17,7 @@ public class TaskFactory {
     private final static String ROLE_IDS_KEY = "role_ids";
     private final static String STACK_ID_KEY = "stack_id";
     private final static String PARENT_TASK_ID_KEY = "parent_task_id";
+    private final static String JOINER_ID_KEY = "joiner_id";
 
     private final Faker faker;
 
@@ -29,6 +33,7 @@ public class TaskFactory {
             put(ROLE_IDS_KEY, new Long[]{Long.parseLong(faker.number().digits(3))});
             put(STACK_ID_KEY, faker.number().digits(3));
             put(PARENT_TASK_ID_KEY, faker.number().digits(3));
+            put(JOINER_ID_KEY, faker.number().digits(3));
         }};
     }
 
@@ -48,6 +53,15 @@ public class TaskFactory {
                 .build();
     }
 
+    public Task model(Long roleId) {
+        return Task.builder()
+                .name(faker.lorem().word())
+                .description(faker.lorem().sentence())
+                .estimatedRequiredHours(Integer.valueOf(faker.number().digits(2)))
+                .roles(Collections.singleton(new RoleFactory().model(roleId)))
+                .build();
+    }
+
     public TaskDto dto() {
         return TaskDto.builder()
                 .name(faker.name().firstName())
@@ -56,6 +70,7 @@ public class TaskFactory {
                 .roleIds(new Long[]{Long.parseLong(faker.number().digits(3))})
                 .stackId(Long.parseLong(faker.number().digits(3)))
                 .parentTaskId(Long.parseLong(faker.number().digits(3)))
+                .joinerId(Long.parseLong(faker.number().digits(3)))
                 .build();
     }
 
@@ -67,6 +82,7 @@ public class TaskFactory {
                 .roleIds(new Long[]{Long.parseLong(faker.number().digits(3))})
                 .stackId(Long.parseLong(faker.number().digits(3)))
                 .parentTaskId(Long.parseLong(faker.number().digits(3)))
+                .joinerId(Long.parseLong(faker.number().digits(3)))
                 .build();
     }
 }

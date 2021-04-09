@@ -38,6 +38,10 @@ public class UpdateTaskDto {
     @Min(1)
     private Integer workedHours;
 
+    @JsonProperty(value= "joiner_id")
+    @Min(1)
+    private Long joinerId;
+
     @JsonProperty(value= "parent_task_id")
     private Long parentTaskId;
 
@@ -59,12 +63,13 @@ public class UpdateTaskDto {
                 .parentTask(Objects.nonNull(this.parentTaskId) ? Task.builder().id(this.parentTaskId).build() : task.getParentTask())
                 .roles(this.getRoles(task))
                 .stack(Objects.nonNull(this.stackId) ? Stack.builder().id(this.stackId).build() : task.getStack())
+                .joinerId(Objects.nonNull(this.joinerId) ? this.joinerId : task.getJoinerId())
                 .build();
     }
 
     private Set<Role> getRoles(Task task) {
         if (Objects.isNull(this.roleIds)) return task.getRoles();
-        Set<Role> roles = null;
+        Set<Role> roles;
 
         if (this.roleIds.length > ITEMS_TO_CONSIDERED) {
             roles = new HashSet<>();

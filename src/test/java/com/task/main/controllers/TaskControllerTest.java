@@ -186,6 +186,34 @@ public class TaskControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 
+    @Test(expected = MockitoException.class)
+    public void whenCreatesATaskButJoinerNotFoundThenReturnsNotFoundException()
+            throws Exception {
+        when(this.createTaskService.execute(any())).thenThrow(JoinerNotFoundException.class);
+
+        this.mockMvc
+                .perform(post(TASK_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(UTF_8_KEY)
+                        .content(this.objectMapper.writeValueAsString(this.taskMap)))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
+
+    @Test(expected = MockitoException.class)
+    public void whenCreatesATaskButJoinerHasNotRequiredRoleThenReturnsJoinerHasNotValidRoleException()
+            throws Exception {
+        when(this.createTaskService.execute(any())).thenThrow(JoinerHasNotValidRoleException.class);
+
+        this.mockMvc
+                .perform(post(TASK_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(UTF_8_KEY)
+                        .content(this.objectMapper.writeValueAsString(this.taskMap)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
+
     @Test
     public void whenGetAllTaskIdsThenReturnsTasksIds() throws Exception {
         when(this.showTaskIdsService.execute()).thenReturn(new Long[]{1L, 2L});
@@ -372,6 +400,34 @@ public class TaskControllerTest {
                         .characterEncoding(UTF_8_KEY)
                         .content(this.objectMapper.writeValueAsString(map)))
                 .andExpect(status().isInternalServerError())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
+
+    @Test(expected = MockitoException.class)
+    public void whenUpdatesATaskButJoinerNotFoundThenReturnsNotFoundException()
+            throws Exception {
+        when(this.createTaskService.execute(any())).thenThrow(JoinerNotFoundException.class);
+
+        this.mockMvc
+                .perform(post(TASK_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(UTF_8_KEY)
+                        .content(this.objectMapper.writeValueAsString(this.taskMap)))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
+
+    @Test(expected = MockitoException.class)
+    public void whenUpdatesATaskButJoinerHasNotRequiredRoleThenReturnsJoinerHasNotValidRoleException()
+            throws Exception {
+        when(this.createTaskService.execute(any())).thenThrow(JoinerHasNotValidRoleException.class);
+
+        this.mockMvc
+                .perform(post(TASK_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(UTF_8_KEY)
+                        .content(this.objectMapper.writeValueAsString(this.taskMap)))
+                .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 }

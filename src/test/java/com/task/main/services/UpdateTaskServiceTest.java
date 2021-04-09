@@ -1,8 +1,12 @@
 package com.task.main.services;
 
 import com.github.javafaker.Faker;
+import com.task.main.dtos.TaskDto;
 import com.task.main.dtos.UpdateTaskDto;
 import com.task.main.exceptions.*;
+import com.task.main.facades.implementations.JoinerFacade;
+import com.task.main.facades.models.Joiner;
+import com.task.main.factories.JoinerFactory;
 import com.task.main.factories.RoleFactory;
 import com.task.main.factories.StackFactory;
 import com.task.main.factories.TaskFactory;
@@ -33,6 +37,8 @@ import static org.mockito.BDDMockito.given;
 @ContextConfiguration(classes = {UpdateTaskService.class})
 public class UpdateTaskServiceTest {
 
+    private static final Byte FIRST_ELEMENT = 0;
+
     @MockBean
     private TaskRepository taskRepository;
 
@@ -42,10 +48,15 @@ public class UpdateTaskServiceTest {
     @MockBean
     private StackRepository stackRepository;
 
+    @MockBean
+    private JoinerFacade joinerFacade;
+
     @Autowired
     private UpdateTaskService updateTaskService;
 
     private TaskFactory taskFactory;
+
+    private JoinerFactory joinerFactory;
 
     private Faker faker;
 
@@ -53,17 +64,20 @@ public class UpdateTaskServiceTest {
     public void setup() {
         this.faker = new Faker();
         this.taskFactory = new TaskFactory();
+        this.joinerFactory = new JoinerFactory();
     }
 
     @Test
     public void whenExecuteServiceThenReturnNotContent() {
         Long id = Long.parseLong(faker.number().digits(3));
+        UpdateTaskDto updateDto = this.taskFactory.updateDto();
+        given(this.joinerFacade.getJoiner(anyLong())).willReturn(Optional.of(new JoinerFactory().model(updateDto.getRoleIds()[FIRST_ELEMENT])));
         given(this.roleRepository.findAllById(any())).willReturn(List.of(new RoleFactory().model()));
         given(this.stackRepository.findById(anyLong())).willReturn(Optional.of(new StackFactory().model()));
         given(this.taskRepository.findById(anyLong())).willReturn(Optional.of(this.taskFactory.model()));
         given(this.taskRepository.save(any())).willReturn(this.taskFactory.model());
 
-        assertThat(this.updateTaskService.execute(id, this.taskFactory.updateDto())).isNotNull();
+        assertThat(this.updateTaskService.execute(id, updateDto)).isNotNull();
     }
 
     @Test
@@ -71,6 +85,7 @@ public class UpdateTaskServiceTest {
         Long id = Long.parseLong(faker.number().digits(3));
         UpdateTaskDto updateTaskDto = this.taskFactory.updateDto();
         updateTaskDto.setRoleIds(new Long[]{Long.parseLong(faker.number().digits(3)), Long.parseLong(faker.number().digits(3))});
+        given(this.joinerFacade.getJoiner(anyLong())).willReturn(Optional.of(new JoinerFactory().model(updateTaskDto.getRoleIds()[FIRST_ELEMENT])));
         given(this.roleRepository.findAllById(any())).willReturn(List.of(new RoleFactory().model(), new RoleFactory().model()));
         given(this.stackRepository.findById(anyLong())).willReturn(Optional.of(new StackFactory().model()));
         given(this.taskRepository.findById(anyLong())).willReturn(Optional.of(this.taskFactory.model()));
@@ -130,5 +145,32 @@ public class UpdateTaskServiceTest {
         given(this.taskRepository.save(any())).willReturn(this.taskFactory.model());
 
         assertThrows(ParentTaskMustNotBeChildTaskException.class, () -> this.updateTaskService.execute(id, this.taskFactory.updateDto()));
+    }
+
+    @Test
+    public void whenExecuteServiceButJoinerNotFoundThenRaiseJoinerNotFoundException() {
+        Long id = Long.parseLong(faker.number().digits(3));
+        UpdateTaskDto updateTaskDto = this.taskFactory.updateDto();
+        updateTaskDto.setRoleIds(new Long[]{Long.parseLong(faker.number().digits(3)), Long.parseLong(faker.number().digits(3))});
+        given(this.joinerFacade.getJoiner(anyLong())).willReturn(Optional.empty());
+        given(this.roleRepository.findAllById(any())).willReturn(List.of(new RoleFactory().model(), new RoleFactory().model()));
+        given(this.stackRepository.findById(anyLong())).willReturn(Optional.of(new StackFactory().model()));
+        given(this.taskRepository.findById(anyLong())).willReturn(Optional.of(this.taskFactory.model()));
+
+        assertThrows(JoinerNotFoundException.class, () -> this.updateTaskService.execute(id, updateTaskDto));
+    }
+
+    @Test
+    public void whenExecuteServiceButJoinerHasNotValidRoleThenRaiseJoinerHasNotValidRoleException() {
+        Long id = Long.parseLong(faker.number().digits(3));
+        Long roleId = Long.parseLong(faker.number().digits(3));
+        UpdateTaskDto updateTaskDto = this.taskFactory.updateDto();
+        updateTaskDto.setRoleIds(null);
+        given(this.joinerFacade.getJoiner(anyLong())).willReturn(Optional.of(this.joinerFactory.model(Long.parseLong(faker.number().digits(3)))));
+        given(this.roleRepository.findAllById(any())).willReturn(List.of(new RoleFactory().model(roleId)));
+        given(this.stackRepository.findById(anyLong())).willReturn(Optional.of(new StackFactory().model()));
+        given(this.taskRepository.findById(anyLong())).willReturn(Optional.of(this.taskFactory.model(roleId)));
+
+        assertThrows(JoinerHasNotValidRoleException.class, () -> this.updateTaskService.execute(id, updateTaskDto));
     }
 }

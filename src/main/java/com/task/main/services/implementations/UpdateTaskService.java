@@ -2,6 +2,8 @@ package com.task.main.services.implementations;
 
 import com.task.main.dtos.UpdateTaskDto;
 import com.task.main.exceptions.*;
+import com.task.main.facades.interfaces.JoinerFacade;
+import com.task.main.facades.models.Joiner;
 import com.task.main.models.Role;
 import com.task.main.models.Task;
 import com.task.main.repositories.RoleRepository;
@@ -22,16 +24,18 @@ public class UpdateTaskService implements com.task.main.services.interfaces.Upda
     private final TaskRepository taskRepository;
     private final RoleRepository roleRepository;
     private final StackRepository stackRepository;
+    private final JoinerFacade joinerFacade;
 
     @Autowired
     public UpdateTaskService(
             TaskRepository taskRepository,
             RoleRepository roleRepository,
-            StackRepository stackRepository
-    ) {
+            StackRepository stackRepository,
+            JoinerFacade joinerFacade) {
         this.taskRepository = taskRepository;
         this.roleRepository = roleRepository;
         this.stackRepository = stackRepository;
+        this.joinerFacade = joinerFacade;
     }
 
     @Override
@@ -68,10 +72,31 @@ public class UpdateTaskService implements com.task.main.services.interfaces.Upda
             this.existsStack(updateTaskDto.getStackId());
         }
 
+        if(Objects.nonNull(updateTaskDto.getJoinerId())) {
+            existsJoinerWithRole(task, updateTaskDto);
+        }
+
         Task updateTask = updateTaskDto.toTask(task);
         log.info("Task model built");
 
         return updateTask;
+    }
+
+    @SneakyThrows
+    private void checkIfTaskCanBeChild(Task task, UpdateTaskDto updateTaskDto) {
+        log.info("Check if task can be child");
+        if (Objects.nonNull(task.getChildTasks()) && !task.getChildTasks().isEmpty() &&
+                Objects.nonNull(updateTaskDto.getParentTaskId())) {
+            throw new ParentTaskMustNotBeChildTaskException();
+        }
+    }
+
+    @SneakyThrows
+    private void checkParent(Task task) {
+        log.info("Check if task is parent");
+        if (Objects.nonNull(task.getParentTask())) {
+            throw new ChildTaskMustNotBeParentTaskException();
+        }
     }
 
     @SneakyThrows
@@ -92,18 +117,39 @@ public class UpdateTaskService implements com.task.main.services.interfaces.Upda
     }
 
     @SneakyThrows
-    private void checkParent(Task task) {
-        log.info("Check if task is parent");
-        if (Objects.nonNull(task.getParentTask())) {
-            throw new ChildTaskMustNotBeParentTaskException();
-        }
+    private void existsJoinerWithRole(Task task, UpdateTaskDto updateTaskDto) {
+        log.info("Check if joiner exists with role");
+        Joiner joiner = this.findJoiner(updateTaskDto);
+        this.joinerHasValidRole(task, joiner, updateTaskDto);
     }
 
     @SneakyThrows
-    private void checkIfTaskCanBeChild(Task task, UpdateTaskDto updateTaskDto) {
-        if (Objects.nonNull(task.getChildTasks()) && !task.getChildTasks().isEmpty() &&
-                Objects.nonNull(updateTaskDto.getParentTaskId())) {
-            throw new ParentTaskMustNotBeChildTaskException();
+    private Joiner findJoiner(UpdateTaskDto updateTaskDto) {
+        log.info("Find joiner");
+        return this.joinerFacade.getJoiner(updateTaskDto.getJoinerId())
+                .orElseThrow(JoinerNotFoundException::new);
+    }
+
+    @SneakyThrows
+    private void joinerHasValidRole(Task task, Joiner joiner, UpdateTaskDto updateTaskDto) {
+        log.info("Check if joiner has a valid role");
+        List roles = this.getRoles(task, updateTaskDto);
+
+        if (!roles.contains(joiner.getRole().getId())) {
+            throw new JoinerHasNotValidRoleException();
         }
+    }
+
+    private List getRoles(Task task, UpdateTaskDto updateTaskDto) {
+        log.info("Get roles from request or task");
+        List roles;
+
+        if(Objects.nonNull(updateTaskDto.getRoleIds())) {
+            roles = Arrays.asList(updateTaskDto.getRoleIds());
+        } else {
+            roles = Arrays.asList(task.getRoles().toArray());
+        }
+
+        return roles;
     }
 }
