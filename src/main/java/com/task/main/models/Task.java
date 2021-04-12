@@ -44,6 +44,12 @@ public class Task {
     @Min(1)
     private Integer estimatedRequiredHours;
 
+    @Min(1)
+    private Integer workedHours;
+
+    @Min(1)
+    private Long joinerId;
+
     @ManyToOne
     private Task parentTask;
 

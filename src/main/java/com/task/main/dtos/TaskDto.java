@@ -31,6 +31,15 @@ public class TaskDto {
     @Min(1)
     private Integer estimatedRequiredHours;
 
+    @JsonProperty(value= "worked_hours")
+    @Min(1)
+    private Integer workedHours;
+
+    @JsonProperty(value= "joiner_id")
+    @NotNull
+    @Min(1)
+    private Long joinerId;
+
     @JsonProperty(value= "parent_task_id")
     private Long parentTaskId;
 
@@ -39,16 +48,16 @@ public class TaskDto {
     @Min(1)
     private Long stackId;
 
-    @JsonProperty(value= "role_id")
+    @JsonProperty(value= "role_ids")
     @NotNull
-    @Min(1)
-    private Long roleId;
+    private Long[] roleIds;
 
     public Task toTask() {
         return Task.builder()
                 .name(this.name)
                 .description(Objects.nonNull(this.description) ? this.description : "")
                 .estimatedRequiredHours(this.estimatedRequiredHours)
+                .workedHours(this.workedHours)
                 .build();
     }
 }
