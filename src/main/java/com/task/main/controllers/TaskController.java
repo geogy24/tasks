@@ -4,6 +4,7 @@ import com.task.main.dtos.TaskDto;
 import com.task.main.models.Task;
 import com.task.main.services.CreateTaskServiceInterface;
 import com.task.main.services.ShowTaskIdsServiceInterface;
+import com.task.main.services.ShowTaskServiceInterface;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
@@ -26,14 +27,16 @@ import javax.validation.Valid;
 public class TaskController {
     private final CreateTaskServiceInterface createTaskServiceInterface;
     private final ShowTaskIdsServiceInterface showTaskIdsServiceInterface;
+    private final ShowTaskServiceInterface showTaskServiceInterface;
 
     @Autowired
     public TaskController(
             CreateTaskServiceInterface createTaskServiceInterface,
-            ShowTaskIdsServiceInterface showTaskIdsServiceInterface
-    ) {
+            ShowTaskIdsServiceInterface showTaskIdsServiceInterface,
+            ShowTaskServiceInterface showTaskServiceInterface) {
         this.createTaskServiceInterface = createTaskServiceInterface;
         this.showTaskIdsServiceInterface = showTaskIdsServiceInterface;
+        this.showTaskServiceInterface = showTaskServiceInterface;
     }
 
     @PostMapping
@@ -55,5 +58,16 @@ public class TaskController {
     public Long[] listIds() {
         log.info("Show all task ids");
         return this.showTaskIdsServiceInterface.execute();
+    }
+
+    @GetMapping("/{id}")
+    @ApiOperation(value = "Return task search by id")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return task search by id"),
+            @ApiResponse(code = 404, message = "Task not found")
+    })
+    public Task show(@PathVariable Long id) {
+        log.info("Show task by id {}", id);
+        return this.showTaskServiceInterface.execute(id);
     }
 }
