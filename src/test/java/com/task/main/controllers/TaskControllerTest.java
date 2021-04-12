@@ -9,6 +9,7 @@ import com.task.main.exceptions.TaskNotFoundException;
 import com.task.main.factories.TaskFactory;
 import com.task.main.models.Task;
 import com.task.main.services.CreateTaskServiceInterface;
+import com.task.main.services.DeleteTaskServiceInterface;
 import com.task.main.services.ShowTaskIdsServiceInterface;
 import com.task.main.services.ShowTaskServiceInterface;
 import org.junit.Before;
@@ -32,9 +33,8 @@ import java.util.HashMap;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -45,6 +45,7 @@ public class TaskControllerTest {
 
     private final static String TASK_URL = "/api/tasks";
     private final static String GET_TASK_URL = "/api/tasks/{id}";
+    private final static String DELETE_TASK_URL = "/api/tasks/{id}";
     private final static String UTF_8_KEY = "utf-8";
     private final static String STACK_ID_KEY = "stack_id";
 
@@ -62,6 +63,9 @@ public class TaskControllerTest {
 
     @MockBean
     private ShowTaskServiceInterface showTaskServiceInterface;
+
+    @MockBean
+    private DeleteTaskServiceInterface deleteTaskServiceInterface;
 
     private Task taskModel;
 
@@ -217,6 +221,33 @@ public class TaskControllerTest {
 
         this.mockMvc
                 .perform(get(GET_TASK_URL, id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(UTF_8_KEY)
+                        .content(this.objectMapper.writeValueAsString(this.taskMap)))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
+
+    @Test
+    public void whenDeleteATaskThenTaskIsDeleted() throws Exception {
+        Long id = Long.valueOf(faker.number().digits(2));
+        doNothing().when(this.deleteTaskServiceInterface).execute(anyLong());
+
+        this.mockMvc
+                .perform(delete(DELETE_TASK_URL, id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(UTF_8_KEY))
+                .andExpect(status().isOk());
+    }
+
+    @Test(expected = MockitoException.class)
+    public void whenDeleteATaskButTaskNotFoundThenRaiseTaskNotFoundException()
+            throws Exception {
+        Long id = Long.valueOf(faker.number().digits(2));
+        doThrow(TaskNotFoundException.class).when(this.deleteTaskServiceInterface).execute(anyLong());
+
+        this.mockMvc
+                .perform(delete(DELETE_TASK_URL, id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .characterEncoding(UTF_8_KEY)
                         .content(this.objectMapper.writeValueAsString(this.taskMap)))

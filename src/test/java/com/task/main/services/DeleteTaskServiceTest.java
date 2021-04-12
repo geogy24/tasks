@@ -1,7 +1,7 @@
 package com.task.main.services;
 
 import com.github.javafaker.Faker;
-import com.task.main.exceptions.ChildTaskMustNotBeParentTaskException;
+import com.task.main.exceptions.RoleNotFoundException;
 import com.task.main.exceptions.TaskNotFoundException;
 import com.task.main.factories.TaskFactory;
 import com.task.main.models.Task;
@@ -16,21 +16,22 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Optional;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @RunWith(SpringRunner.class)
-@ContextConfiguration(classes = {ShowTaskService.class})
-public class ShowTaskServiceTest {
+@ContextConfiguration(classes = {DeleteTaskService.class})
+public class DeleteTaskServiceTest {
 
     @MockBean
     private TaskRepository taskRepository;
 
     @Autowired
-    private ShowTaskService showTaskService;
+    private DeleteTaskService deleteTaskService;
 
     private TaskFactory taskFactory;
 
@@ -43,23 +44,23 @@ public class ShowTaskServiceTest {
     }
 
     @Test
-    public void whenExecuteServiceThenReturnTask() {
+    public void whenExecuteServiceThenDeleteTaskIsCall() {
         Long id = Long.valueOf(faker.number().digits(2));
         Task task = this.taskFactory.model();
         given(this.taskRepository.findById(anyLong())).willReturn(Optional.of(task));
 
-        Task returnTask = this.showTaskService.execute(id);
+        this.deleteTaskService.execute(id);
 
-        assertThat(returnTask).isNotNull();
-        assertThat(returnTask.getName()).isEqualTo(returnTask.getName());
-        assertThat(returnTask.getDescription()).isEqualTo(returnTask.getDescription());
-        assertThat(returnTask.getEstimatedRequiredHours()).isEqualTo(returnTask.getEstimatedRequiredHours());
+        verify(this.taskRepository, times(1)).findById(any());
+        verify(this.taskRepository, times(1)).delete(any());
     }
 
     @Test
     public void whenExecuteServiceButTaskNotFoundThenReturnTaskNotFoundException() {
         Long id = Long.valueOf(faker.number().digits(2));
 
-        assertThrows(TaskNotFoundException.class, () -> this.showTaskService.execute(id));
+        assertThrows(TaskNotFoundException.class, () -> this.deleteTaskService.execute(id));
+        verify(this.taskRepository, times(0)).delete(any());
     }
+
 }

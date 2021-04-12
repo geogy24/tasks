@@ -15,7 +15,6 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Optional;
@@ -59,6 +58,6 @@ public class TaskRepositoryTest {
     public void whenGetAllTaskIds() {
         Optional<Long[]> taskIds = this.taskRepository.listAllTasksIds();
 
-        assertThat(taskIds.get()).contains(new Long[]{this.task.getId()});
+        assertThat(taskIds.get()).contains(this.task.getId());
     }
 }
