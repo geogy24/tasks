@@ -5,10 +5,7 @@ import com.task.main.dtos.TaskDto;
 import com.task.main.dtos.UpdateTaskDto;
 import com.task.main.models.Task;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 public class TaskFactory {
     private final static String NAME_KEY = "name";
@@ -58,7 +55,7 @@ public class TaskFactory {
                 .name(faker.lorem().word())
                 .description(faker.lorem().sentence())
                 .estimatedRequiredHours(Integer.valueOf(faker.number().digits(2)))
-                .roles(Collections.singleton(new RoleFactory().model(roleId)))
+                .roles(new ArrayList<Long>(List.of(roleId)))
                 .build();
     }
 
@@ -67,7 +64,7 @@ public class TaskFactory {
                 .name(faker.name().firstName())
                 .description(faker.lorem().sentence())
                 .estimatedRequiredHours(Integer.valueOf(faker.number().digits(2)))
-                .roleIds(new Long[]{Long.parseLong(faker.number().digits(3))})
+                .roleIds(new ArrayList<Long>(List.of(Long.parseLong(faker.number().digits(3)))))
                 .stackId(Long.parseLong(faker.number().digits(3)))
                 .parentTaskId(Long.parseLong(faker.number().digits(3)))
                 .joinerId(Long.parseLong(faker.number().digits(3)))
@@ -79,7 +76,7 @@ public class TaskFactory {
                 .name(faker.name().firstName())
                 .description(faker.lorem().sentence())
                 .estimatedRequiredHours(Integer.valueOf(faker.number().digits(2)))
-                .roleIds(new Long[]{Long.parseLong(faker.number().digits(3))})
+                .roleIds(new ArrayList<Long>(List.of(Long.parseLong(faker.number().digits(3)))))
                 .stackId(Long.parseLong(faker.number().digits(3)))
                 .parentTaskId(Long.parseLong(faker.number().digits(3)))
                 .joinerId(Long.parseLong(faker.number().digits(3)))
