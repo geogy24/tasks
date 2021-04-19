@@ -3,38 +3,39 @@ package com.task.main.services.implementations;
 import com.task.main.dtos.UpdateTaskDto;
 import com.task.main.exceptions.*;
 import com.task.main.facades.interfaces.JoinerFacade;
+import com.task.main.facades.interfaces.RoleFacade;
+import com.task.main.facades.interfaces.StackFacade;
 import com.task.main.facades.models.Joiner;
-import com.task.main.models.Role;
+import com.task.main.facades.models.Role;
 import com.task.main.models.Task;
-import com.task.main.repositories.RoleRepository;
-import com.task.main.repositories.StackRepository;
 import com.task.main.repositories.TaskRepository;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Service
 @Slf4j
 public class UpdateTaskService implements com.task.main.services.interfaces.UpdateTaskService {
     private final TaskRepository taskRepository;
-    private final RoleRepository roleRepository;
-    private final StackRepository stackRepository;
+    private final RoleFacade roleFacade;
+    private final StackFacade stackFacade;
     private final JoinerFacade joinerFacade;
 
     @Autowired
     public UpdateTaskService(
             TaskRepository taskRepository,
-            RoleRepository roleRepository,
-            StackRepository stackRepository,
+            RoleFacade roleFacade,
+            StackFacade stackFacade,
             JoinerFacade joinerFacade) {
         this.taskRepository = taskRepository;
-        this.roleRepository = roleRepository;
-        this.stackRepository = stackRepository;
+        this.roleFacade = roleFacade;
+        this.stackFacade = stackFacade;
         this.joinerFacade = joinerFacade;
     }
 
@@ -100,11 +101,11 @@ public class UpdateTaskService implements com.task.main.services.interfaces.Upda
     }
 
     @SneakyThrows
-    private void existsRole(Long[] roleIds) {
+    private void existsRole(ArrayList<Long> roleIds) {
         log.info("Exists roles");
-        List<Role> roles = (List<Role>) this.roleRepository.findAllById(Arrays.asList(roleIds));
+        Optional<List<Role>> roles = this.roleFacade.getAllById(roleIds);
 
-        if (roles.size() != roleIds.length) {
+        if (!roles.isPresent() || roles.get().size() != roleIds.size()) {
             throw new RoleNotFoundException();
         }
     }
@@ -112,7 +113,7 @@ public class UpdateTaskService implements com.task.main.services.interfaces.Upda
     @SneakyThrows
     private void existsStack(Long stackId) {
         log.info("Exists stack with Id {}", stackId);
-        this.stackRepository.findById(stackId)
+        this.stackFacade.getStack(stackId)
                 .orElseThrow(StackNotFoundException::new);
     }
 
@@ -133,21 +134,20 @@ public class UpdateTaskService implements com.task.main.services.interfaces.Upda
     @SneakyThrows
     private void joinerHasValidRole(Task task, Joiner joiner, UpdateTaskDto updateTaskDto) {
         log.info("Check if joiner has a valid role");
-        List roles = this.getRoles(task, updateTaskDto);
+        List<Long> roles = this.getRoles(task, updateTaskDto);
 
         if (!roles.contains(joiner.getRole().getId())) {
             throw new JoinerHasNotValidRoleException();
         }
     }
 
-    private List getRoles(Task task, UpdateTaskDto updateTaskDto) {
-        log.info("Get roles from request or task");
-        List roles;
+    private List<Long> getRoles(Task task, UpdateTaskDto updateTaskDto) {
+        log.info("Get roles from request and task");
+        List<Long> roles = new ArrayList<>();
+        if (Objects.nonNull(task.getRoles())) task.getRoles().forEach(id -> roles.add(id));
 
         if(Objects.nonNull(updateTaskDto.getRoleIds())) {
-            roles = Arrays.asList(updateTaskDto.getRoleIds());
-        } else {
-            roles = Arrays.asList(task.getRoles().toArray());
+            updateTaskDto.getRoleIds().forEach(id -> roles.add(id));
         }
 
         return roles;
