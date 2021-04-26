@@ -63,9 +63,9 @@ public class UpdateTaskDto {
                 .build();
     }
 
-    private ArrayList<Long> getRoles(Task task) {
+    private List<Long> getRoles(Task task) {
         if (Objects.isNull(this.roleIds)) return task.getRoles();
-        ArrayList<Long> roles;
+        List<Long> roles;
 
         if (this.roleIds.size() > ITEMS_TO_CONSIDERED) {
             roles = this.roleIds;
