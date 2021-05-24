@@ -5,12 +5,15 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.*;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.persistence.*;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Task model is using to save task's data
@@ -66,5 +69,43 @@ public class Task {
     private List<Task> childTasks;
 
     @Column(nullable = false)
-    private ArrayList<Long> roles;
+    private String roles;
+
+    public List<Long> getRoles() {
+        return convertToEntityAttribute(roles);
+    }
+
+    public void setRoles(List<Long> roles) {
+        this.roles = TaskBuilder.convertToDatabaseColumn(roles);
+    }
+
+    public void setRoles(String roles) {
+        this.roles = roles;
+    }
+
+    public List<Long> convertToEntityAttribute(String data) {
+        if (data == null || data.trim().length() == 0) {
+            return new ArrayList<>();
+        }
+
+        return Arrays.stream(data.split(","))
+                .map(Long::valueOf)
+                .collect(Collectors.toList());
+    }
+
+    public static class TaskBuilder<T> {
+        private String roles;
+
+        public TaskBuilder roles(List<Long> roles) {
+            this.roles = convertToDatabaseColumn(roles);
+            return this;
+        }
+
+        public static String convertToDatabaseColumn(List<Long> attribute) {
+            if (attribute == null || attribute.isEmpty()) {
+                return "";
+            }
+            return StringUtils.join(attribute, ",");
+        }
+    }
 }
