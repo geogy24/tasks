@@ -9,6 +9,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.util.ArrayList;
 import java.util.Objects;
 
 /**
@@ -50,7 +51,7 @@ public class TaskDto {
 
     @JsonProperty(value= "role_ids")
     @NotNull
-    private Long[] roleIds;
+    private ArrayList<Long> roleIds;
 
     public Task toTask() {
         return Task.builder()
@@ -58,6 +59,8 @@ public class TaskDto {
                 .description(Objects.nonNull(this.description) ? this.description : "")
                 .estimatedRequiredHours(this.estimatedRequiredHours)
                 .workedHours(this.workedHours)
+                .stack(this.stackId)
+                .roles(this.roleIds)
                 .build();
     }
 }

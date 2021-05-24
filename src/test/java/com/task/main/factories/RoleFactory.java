@@ -1,7 +1,7 @@
 package com.task.main.factories;
 
 import com.github.javafaker.Faker;
-import com.task.main.models.Role;
+import com.task.main.facades.models.Role;
 
 public class RoleFactory {
     private Faker faker;
