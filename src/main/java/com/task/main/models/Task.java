@@ -2,14 +2,15 @@ package com.task.main.models;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.*;
 
 import javax.persistence.*;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Task model is using to save task's data
@@ -18,7 +19,7 @@ import java.util.Set;
  * @version 1.0.0
  */
 @Entity
-@Table(name = "tasks")
+@Table(name = "tasks", schema = "tasks")
 @Data
 @Builder
 @NoArgsConstructor
@@ -42,30 +43,28 @@ public class Task {
 
     @Column(nullable = false)
     @Min(1)
+    @JsonProperty("estimated_required_hours")
     private Integer estimatedRequiredHours;
 
     @Min(1)
+    @JsonProperty("worked_hours")
     private Integer workedHours;
 
     @Min(1)
+    @JsonProperty("joiner_id")
     private Long joinerId;
 
     @ManyToOne
+    @JsonProperty("parent_task")
     private Task parentTask;
 
-    @ManyToOne
-    private Stack stack;
+    @Column(nullable = false)
+    private Long stack;
 
     @OneToMany(mappedBy = "parentTask")
+    @JsonProperty("child_tasks")
     private List<Task> childTasks;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
-    @JoinTable(name = "tasks_by_roles",
-            joinColumns = {
-                    @JoinColumn(name = "task_id", referencedColumnName = "id",
-                            nullable = false, updatable = false)},
-            inverseJoinColumns = {
-                    @JoinColumn(name = "role_id", referencedColumnName = "id",
-                            nullable = false, updatable = false)})
-    private Set<Role> roles;
+    @Column(nullable = false)
+    private ArrayList<Long> roles;
 }

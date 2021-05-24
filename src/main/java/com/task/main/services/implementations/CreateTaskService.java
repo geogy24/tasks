@@ -3,12 +3,11 @@ package com.task.main.services.implementations;
 import com.task.main.dtos.TaskDto;
 import com.task.main.exceptions.*;
 import com.task.main.facades.interfaces.JoinerFacade;
+import com.task.main.facades.interfaces.RoleFacade;
+import com.task.main.facades.interfaces.StackFacade;
 import com.task.main.facades.models.Joiner;
-import com.task.main.models.Role;
-import com.task.main.models.Stack;
+import com.task.main.facades.models.Role;
 import com.task.main.models.Task;
-import com.task.main.repositories.RoleRepository;
-import com.task.main.repositories.StackRepository;
 import com.task.main.repositories.TaskRepository;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -19,19 +18,19 @@ import java.util.*;
 @Service
 @Slf4j
 public class CreateTaskService implements com.task.main.services.interfaces.CreateTaskService {
-    private final RoleRepository roleRepository;
-    private final StackRepository stackRepository;
+    private final RoleFacade roleFacade;
+    private final StackFacade stackFacade;
     private final TaskRepository taskRepository;
     private final JoinerFacade joinerFacade;
 
     public CreateTaskService(
-            RoleRepository roleRepository,
-            StackRepository stackRepository,
+            RoleFacade roleFacade,
+            StackFacade stackFacade,
             TaskRepository taskRepository,
             JoinerFacade joinerFacade
     ) {
-        this.roleRepository = roleRepository;
-        this.stackRepository = stackRepository;
+        this.roleFacade = roleFacade;
+        this.stackFacade = stackFacade;
         this.taskRepository = taskRepository;
         this.joinerFacade = joinerFacade;
     }
@@ -47,10 +46,10 @@ public class CreateTaskService implements com.task.main.services.interfaces.Crea
     private Task buildTask(TaskDto taskDto) {
         log.info("Build task model with data {}", taskDto);
         Task task = taskDto.toTask();
-        setJoiner(task, taskDto);
-        task.setRoles(new HashSet<>(this.findRole(taskDto.getRoleIds())));
-        task.setStack(this.findStack(taskDto.getStackId()));
-        setParentTask(task, taskDto);
+        this.setJoiner(task, taskDto);
+        this.existsRoles(taskDto.getRoleIds());
+        this.existsStack(taskDto.getStackId());
+        this.setParentTask(task, taskDto);
         log.info("Task model built");
         return task;
     }
@@ -72,27 +71,25 @@ public class CreateTaskService implements com.task.main.services.interfaces.Crea
     @SneakyThrows
     private void joinerHasValidRole(Joiner joiner, TaskDto taskDto) {
         log.info("Joiner has a valid role");
-        if (!Arrays.asList(taskDto.getRoleIds()).contains(joiner.getRole().getId())) {
+        if (!taskDto.getRoleIds().contains(joiner.getRole().getId())) {
             throw new JoinerHasNotValidRoleException();
         }
     }
 
     @SneakyThrows
-    private List<Role> findRole(Long[] roleIds) {
-        log.info("Find roles");
-        List<Role> roles = (List<Role>) this.roleRepository.findAllById(Arrays.asList(roleIds));
+    private void existsRoles(ArrayList<Long> roleIds) {
+        log.info("Exists roles");
+        Optional<List<Role>> roles = this.roleFacade.getAllById(roleIds);
 
-        if (roles.size() != roleIds.length) {
+        if (!roles.isPresent() || roles.get().size() != roleIds.size()) {
             throw new RoleNotFoundException();
         }
-
-        return roles;
     }
 
     @SneakyThrows
-    private Stack findStack(Long stackId) {
-        log.info("Find stack with Id {}", stackId);
-        return this.stackRepository.findById(stackId)
+    private void existsStack(Long stackId) {
+        log.info("Exists stack with Id {}", stackId);
+        this.stackFacade.getStack(stackId)
                 .orElseThrow(StackNotFoundException::new);
     }
 

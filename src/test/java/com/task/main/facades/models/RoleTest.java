@@ -1,4 +1,4 @@
-package com.task.main.models;
+package com.task.main.facades.models;
 
 import com.github.javafaker.Faker;
 import org.junit.Before;
@@ -29,12 +29,15 @@ public class RoleTest {
     }
 
     @Test
-    public void whenSaveRoleThenRoleShouldFound() {
-        Role role = new Role();
-        role.setName(this.faker.lorem().word());
-        Role savedRole = this.testEntityManager.persistFlushFind(role);
+    public void whenCreatesARoleObjectThenGetSameData() {
+        Long roleId = Long.parseLong(faker.number().digits(3));
+        String name = faker.lorem().word();
 
-        assertThat(savedRole.getId()).isNotNull();
-        assertThat(savedRole.getName()).isEqualTo(role.getName());
+        Role role = new Role();
+        role.setId(roleId);
+        role.setName(name);
+
+        assertThat(role.getId()).isNotNull();
+        assertThat(role.getName()).isEqualTo(role.getName());
     }
 }

@@ -1,4 +1,4 @@
-package com.task.main.models;
+package com.task.main.facades.models;
 
 import com.github.javafaker.Faker;
 import org.junit.Before;
@@ -29,12 +29,15 @@ public class StackTest {
     }
 
     @Test
-    public void whenSaveStackThenStackShouldFound() {
-        Stack stack = new Stack();
-        stack.setName(this.faker.lorem().word());
-        Stack savedStack = this.testEntityManager.persistFlushFind(stack);
+    public void whenCreatesAStackObjectThenGetSameData() {
+        Long stackId = Long.parseLong(faker.number().digits(3));
+        String name = faker.lorem().word();
 
-        assertThat(savedStack.getId()).isNotNull();
-        assertThat(savedStack.getName()).isEqualTo(stack.getName());
+        Stack stack = new Stack();
+        stack.setId(stackId);
+        stack.setName(name);
+
+        assertThat(stack.getId()).isNotNull();
+        assertThat(stack.getName()).isEqualTo(stack.getName());
     }
 }
